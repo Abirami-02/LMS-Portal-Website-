@@ -1,0 +1,32 @@
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+coverage/
+
+# Environment files and local secrets. Keep only safe templates.
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+secrets*.json
+*.log
+.DS_Store
+
+# Local PDF uploads (keep the directory placeholder)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Editor files
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db

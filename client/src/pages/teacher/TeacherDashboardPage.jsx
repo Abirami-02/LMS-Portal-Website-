@@ -1,0 +1,18 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import ErrorState from '../../components/ErrorState'
+import LoadingState from '../../components/LoadingState'
+import PageHeader from '../../components/PageHeader'
+import StatCard from '../../components/StatCard'
+import { useAuth } from '../../context/AuthContext'
+import { apiRequest } from '../../services/api'
+
+function TeacherDashboardPage() {
+  const { token, user } = useAuth()
+  const [data, setData] = useState({ courses: [], lectures: [] })
+  const [state, setState] = useState({ loading: true, error: '' })
+  useEffect(() => { Promise.all([apiRequest('/courses', { token }), apiRequest('/lectures', { token })]).then(([courses, lectures]) => setData({ courses: courses.courses, lectures: lectures.lectures })).catch((error) => setState({ loading: false, error: error.message })).finally(() => setState((current) => ({ ...current, loading: false }))) }, [token])
+  return <div><PageHeader eyebrow="Teacher dashboard" title={`Welcome, ${user?.name?.split(' ')[0] || 'teacher'}.`} description="Shape your courses, publish useful sessions, and help learners make progress." action={<Link to="/teacher/lectures" className="button-primary">Add a session →</Link>} />{state.loading ? <LoadingState label="Loading your teaching workspace…" /> : state.error ? <ErrorState message={state.error} /> : <><div className="grid gap-4 sm:grid-cols-3"><StatCard label="Your courses" value={data.courses.length} /><StatCard label="Total sessions" value={data.lectures.length} tone="navy" /><StatCard label="Published sessions" value={data.lectures.filter((lecture) => lecture.published).length} /></div><div className="mt-10 rounded-3xl bg-navy p-7 text-white"><p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">Create with purpose</p><h2 className="mt-3 max-w-xl text-2xl font-black">Your next lecture can make a difficult idea feel simple.</h2><p className="mt-3 max-w-xl text-sm leading-6 text-white/65">Add a course, organize it into modules, and publish a YouTube or direct video session with PDF notes for students.</p><div className="mt-6 flex flex-wrap gap-3"><Link to="/teacher/courses" className="button-secondary border-white/20 bg-white/10 text-white hover:border-white hover:text-white">Manage courses</Link><Link to="/teacher/modules" className="button-secondary border-white/20 bg-white/10 text-white hover:border-white hover:text-white">Organize modules</Link></div></div><div className="mt-10 flex items-center justify-between"><div><p className="eyebrow">Your library</p><h2 className="mt-2 text-2xl font-black text-ink">Recent sessions</h2></div><Link to="/teacher/lectures" className="text-sm font-bold text-teal">Manage all →</Link></div><div className="mt-5 overflow-hidden rounded-3xl border border-slate-200 bg-white">{data.lectures.slice(0, 5).map((lecture) => <div key={lecture._id} className="flex flex-col gap-3 border-b border-slate-100 p-5 last:border-0 sm:flex-row sm:items-center"><span className="grid h-10 w-10 place-items-center rounded-xl bg-teal/10 text-teal">▶</span><div className="min-w-0 flex-1"><p className="truncate font-semibold text-ink">{lecture.title}</p><p className="mt-1 text-xs text-slate-500">{lecture.course?.title} · {lecture.module?.title}</p></div><span className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${lecture.published ? 'bg-teal/10 text-teal' : 'bg-amber/20 text-amber-700'}`}>{lecture.published ? 'Published' : 'Draft'}</span></div>)}{!data.lectures.length && <p className="p-8 text-center text-sm text-slate-500">No lectures yet. Start by creating a course.</p>}</div></>}</div>
+}
+
+export default TeacherDashboardPage
