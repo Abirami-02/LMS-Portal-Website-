@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import express from 'express'
 import morgan from 'morgan'
 import path from 'node:path'
+import connectDatabase from './config/db.js'
 import { fileURLToPath } from 'node:url'
 import healthRoutes from './routes/healthRoutes.js'
 import authRoutes from './routes/authRoutes.js'
@@ -18,6 +19,15 @@ import assignmentRoutes from './routes/assignmentRoutes.js'
 dotenv.config()
 
 const app = express()
+app.use(async (_req, _res, next) => {
+  try {
+    await connectDatabase()
+    next()
+  } catch (error) {
+    console.error('Database connection failed:', error.message)
+    next(error)
+  }
+})
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const configuredClientUrls = (process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',')
